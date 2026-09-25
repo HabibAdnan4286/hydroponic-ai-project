@@ -1,0 +1,18 @@
+# Data & models (keep large files out of git)
+data/*
+!data/.gitkeep
+models/*.pth
+models/*.h5
+models/*.pt
+!models/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+venv/
+.env
+
+# OS
+.DS_Store
