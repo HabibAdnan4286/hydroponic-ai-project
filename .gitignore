@@ -1,6 +1,9 @@
 # Data & models (keep large files out of git)
 data/*
 !data/.gitkeep
+!data/growth-days/
+!data/growth-days/splits.csv
+!data/growth-days/splits.csv
 models/*.pth
 models/*.h5
 models/*.pt
