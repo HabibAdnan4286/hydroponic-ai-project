@@ -18,7 +18,12 @@ Both are wrapped in an interactive Streamlit demo (`app/app.py`) for live testin
 | Growth-day predictor | Test R² / MAE | 0.545 / 5.78 days (see [docs/growth_predictor_results.md](docs/growth_predictor_results.md)) |
 
 ## Project Structure
-
+data/         # Datasets (raw data gitignored; splits.csv files tracked for reproducibility)
+notebooks/    # Exploration notebooks
+src/          # Data pipeline, training, and evaluation scripts
+models/       # Saved model weights (gitignored — large files; regenerate via src/train*.py)
+app/          # Streamlit demo combining both models
+docs/         # Detailed results, technical report
 
 
 
