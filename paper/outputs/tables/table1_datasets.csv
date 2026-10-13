@@ -1,0 +1,3 @@
+Dataset,Content,Size,Classes / range,Licence
+"Leaf images (Rathor, Kaggle)","RGB images, NFT hydroponic lettuce, Raspberry Pi camera",209 images,Healthy: 62; K Deficient: 66; N Deficient: 36; Wilt fungal: 45,CC0
+"Growth-day sensor data (jurijsruko, Kaggle)","Daily temperature, humidity, TDS, pH per plant",3169 rows / 70 plants,growth day 1-48; 2023-08-03 to 2023-09-19,Apache-2.0

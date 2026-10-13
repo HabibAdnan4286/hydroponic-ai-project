@@ -7,7 +7,7 @@ tests, with proper validation, what public datasets can and cannot support.
 
 ## What is here
 1. **Vision classifier** - MobileNetV2 (transfer learning) classifies lettuce leaves as Healthy, K deficient,
-   N deficient or Wilt. 91% accuracy on a 35-image held-out split (see limitations).
+   N deficient or Wilt. About 84% accuracy (95% CI 79-89%) under group-aware 5-fold cross-validation.
 2. **Sensor-based growth-day model** - Random Forest on temperature, humidity, TDS and pH, **plus a validity analysis**
    showing that the public dataset cannot support conclusions about temperature effects (all plants share one calendar).
 3. **Streamlit demo** (`app/app.py`) for both models.
@@ -16,7 +16,7 @@ tests, with proper validation, what public datasets can and cannot support.
 ## Results at a glance
 | Component | Result | Caveat |
 |---|---|---|
-| Leaf classifier | 91% accuracy (class-weighted), single 35-image split | 3 of 35 test images have a near-duplicate in training; group-aware cross-validation is the reportable estimate |
+| Leaf classifier | ~84% accuracy (95% CI 79-89%), 5-fold group-aware CV on 209 images | K deficient is hardest (recall ~0.72); class weighting gave no significant gain (McNemar p = 0.63); an earlier 91% single-split figure did not hold up |
 | Growth-day model | R2 0.62 under plant-grouped CV | Calendar date alone gives R2 = 1.00: the model detects the date, not plant biology |
 
 Details: [docs/baseline_results.md](docs/baseline_results.md), [docs/growth_predictor_results.md](docs/growth_predictor_results.md).
@@ -26,7 +26,7 @@ Details: [docs/baseline_results.md](docs/baseline_results.md), [docs/growth_pred
 pip install -r requirements.txt
 python -m kaggle datasets download -d rathorhome/lettuce-disease -p data --unzip
 python -m kaggle datasets download -d jurijsruko/lettuce -p data/growth-days --unzip
-python src/split_data.py && python src/train.py && python src/evaluate.py
+python paper/scripts/check_leakage.py && python paper/scripts/cv_vision.py
 python src/split_growth_data.py && python src/train_growth_predictor.py
 python paper/scripts/check_leakage.py && python paper/scripts/sensor_analysis.py
 python -m streamlit run app/app.py

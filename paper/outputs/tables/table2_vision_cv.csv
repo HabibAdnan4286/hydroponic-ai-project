@@ -1,0 +1,3 @@
+Model,Accuracy (mean +/- SD over folds),Accuracy 95% bootstrap CI (pooled),Macro-F1 (mean +/- SD),N images tested
+Standard loss,0.842 +/- 0.090,"[0.789, 0.890]",0.837 +/- 0.084,209
+Class-weighted loss,0.833 +/- 0.097,"[0.780, 0.880]",0.829 +/- 0.088,209

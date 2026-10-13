@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\caption{Growth-day prediction under plant-grouped cross-validation (5 folds x 5 repeats); folds never share a plant. 'date\_only' uses calendar date as the sole feature.}
+\label{tab:sensor-cv}
+\begin{tabular}{lccc}
+\toprule
+Features & Model & R2 (mean +/- SD) & MAE, days (mean +/- SD) \\
+\midrule
+date\_only (calendar) & RF & 1.000 $\pm$ 0.000 & 0.00 $\pm$ 0.00 \\
+all4 + calendar date & RF & 1.000 $\pm$ 0.000 & 0.00 $\pm$ 0.00 \\
+temp\_only & RF & 0.633 $\pm$ 0.124 & 4.88 $\pm$ 1.12 \\
+all4 (temp+hum+tds+pH) & RF & 0.624 $\pm$ 0.118 & 5.00 $\pm$ 1.08 \\
+all4 (temp+hum+tds+pH) & GradBoost & 0.614 $\pm$ 0.121 & 5.35 $\pm$ 1.03 \\
+all4 (temp+hum+tds+pH) & Linear & 0.003 $\pm$ 0.005 & 11.29 $\pm$ 0.06 \\
+mean baseline & Dummy & -0.000 $\pm$ 0.000 & 11.32 $\pm$ 0.06 \\
+ph\_only & RF & -0.005 $\pm$ 0.003 & 11.35 $\pm$ 0.06 \\
+humidity\_only & RF & -0.011 $\pm$ 0.008 & 11.38 $\pm$ 0.07 \\
+tds\_only & RF & -0.035 $\pm$ 0.016 & 11.43 $\pm$ 0.09 \\
+no\_temp (hum+tds+pH) & RF & -0.038 $\pm$ 0.016 & 11.45 $\pm$ 0.12 \\
+\bottomrule
+\end{tabular}
+\end{table}

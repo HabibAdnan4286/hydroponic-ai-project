@@ -1,56 +1,37 @@
-# Baseline Model Results — Nutrient Deficiency & Disease Classification
+# Leaf Classifier Results
 
-**Model**: MobileNetV2 (ImageNet-pretrained, frozen backbone, fine-tuned classification head)
-**Dataset**: Locarno Lettuce Disease Dataset (Rathor, Kaggle) — 209 images, 4 classes
-**Split**: 70% train (145) / 15% val (29) / 15% test (35), stratified by class
-**Training**: 10 epochs, Adam optimizer, lr=1e-3, CPU
+**Model**: MobileNetV2 (ImageNet-pretrained, frozen backbone, new classification head), Adam lr 1e-3, 10 epochs, CPU
+**Dataset**: Lettuce Plant Leaf Disease Dataset (Rathor, Kaggle, CC0), 209 images, 4 classes
+(Healthy 62, K Deficient 66, N Deficient 36, Wilt 45)
 
-## Class Distribution (Train Set)
-| Class | Train Images |
-|---|---|
-| Healthy | 43 |
-| K Deficient | 46 |
-| N Deficient | 25 |
-| Wilt fungal | 31 |
+## Reportable result: 5-fold group-aware cross-validation
+Folds are stratified by class and keep near-duplicate images together (`paper/scripts/check_leakage.py`,
+`paper/scripts/cv_vision.py`). One repeat; every image is tested once.
 
-## Run 1 — Unweighted Cross-Entropy Loss
+| Metric | Standard loss | Class-weighted loss |
+|---|---|---|
+| Accuracy (mean +/- SD over folds) | 0.842 +/- 0.090 | 0.833 +/- 0.097 |
+| Accuracy, pooled 95% bootstrap CI | [0.789, 0.890] | [0.780, 0.880] |
+| Macro-F1 | 0.837 +/- 0.084 | 0.829 +/- 0.088 |
+| Recall: Healthy | 0.95 +/- 0.07 | 0.94 +/- 0.10 |
+| Recall: K Deficient | 0.72 +/- 0.27 | 0.71 +/- 0.28 |
+| Recall: N Deficient | 0.86 +/- 0.14 | 0.89 +/- 0.12 |
+| Recall: Wilt (fungal) | 0.84 +/- 0.17 | 0.82 +/- 0.15 |
 
-Peak validation accuracy: 93.1% (epoch 8–9)
+- Class weighting made no significant difference (exact McNemar test: p = 0.625).
+- K Deficient is the hardest class. Fold accuracies ranged from 0.67 to 0.91, so small splits are noisy.
 
-**Test set results:**
-| Class | Precision | Recall | F1 |
-|---|---|---|---|
-| Healthy | 1.00 | 1.00 | 1.00 |
-| K Deficient | 0.92 | 1.00 | 0.96 |
-| N Deficient | 1.00 | 0.67 | 0.80 |
-| Wilt fungal | 0.89 | 1.00 | 0.94 |
-| **Overall accuracy** | | | **0.94** |
+## Correction: earlier single-split numbers withdrawn
+An earlier version of this page reported 94% (unweighted) and 91% (class-weighted) accuracy on a single 35-image
+test split, and a nitrogen-deficiency recall gap (67%) that class weighting appeared to fix (100%). Those figures
+rested on six test images in that class and did not replicate: under cross-validation, N Deficient recall is 0.86
+even without weighting.
 
-**Finding**: N Deficient recall (67%) was notably weaker than other classes — 2 of 6 test images misclassified. This tracks directly to it being the smallest training class (25 images vs. 43–46 for others), a class imbalance effect rather than a fundamental limitation of the approach.
+## Leakage check
+The dataset has no plant identifiers. A perceptual-hash analysis found 25 groups of near-duplicate images (52 of 209
+images), and 3 of the 35 test images in the original split (8.6%) had a near-identical image in training. The hash
+check cannot detect different views of the same plant, so some leakage may remain.
 
-## Run 2 — Class-Weighted Cross-Entropy Loss
-
-Applied inverse-frequency class weighting to the loss function to counteract the imbalance identified in Run 1.
-
-**Test set results:**
-| Class | Precision | Recall | F1 |
-|---|---|---|---|
-| Healthy | 1.00 | 0.90 | 0.95 |
-| K Deficient | 0.91 | 0.91 | 0.91 |
-| N Deficient | 0.86 | 1.00 | 0.92 |
-| Wilt fungal | 0.88 | 0.88 | 0.88 |
-| **Overall accuracy** | | | **0.91** |
-
-## Discussion
-
-Class weighting resolved the N Deficient recall gap entirely (67% → 100%), at the cost of a 3-point drop in overall accuracy (94% → 91%) — a modest redistribution of errors toward the majority classes. This is a deliberate and justifiable trade-off: in a deployed nutrient-monitoring system, failing to detect a genuine nitrogen deficiency (false negative) is more costly than an occasional misclassification among the majority classes, since undetected nutrient stress compounds over time and directly affects crop yield. The class-weighted model is therefore preferred going forward despite its slightly lower raw accuracy.
-
-**Limitation**: Test set size (35 images total, 6–11 per class) is small; these metrics should be treated as indicative rather than statistically robust. Future work includes collecting additional data, particularly for the N Deficient class, to validate this finding at scale.
-
-
-## Addendum: leakage check and status of these numbers
-The dataset has no plant identifiers. A perceptual-hash analysis (`paper/scripts/check_leakage.py`) found 25 groups of
-near-duplicate images (52 of 209 images), and 3 of the 35 test images (8.6%) have a near-identical image in the
-training set. The single-split figures above are therefore probably optimistic. With only 6 test images in the
-N Deficient class, the 67% vs 100% recall difference is also within sampling noise. Group-aware cross-validation
-(`paper/scripts/cv_vision.py`) supplies the reportable estimates.
+## Limitations
+Small single-source dataset; one cross-validation repeat (more repeats would tighten the estimates); no external
+validation on another farm, camera or season.
