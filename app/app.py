@@ -53,6 +53,7 @@ with tab1:
 
 with tab2:
     st.subheader("Predict growth day from sensor readings")
+    st.warning("Demo only: the underlying dataset has all plants on one calendar, so this model detects the date, not plant biology.")
     col1, col2 = st.columns(2)
     with col1:
         temp = st.slider("Temperature (°C)", 18.0, 34.0, 28.0)

@@ -1,0 +1,20 @@
+{
+  "_instructions": "Fill every null with the REAL count from your screening log. make_prisma.py refuses to draw while any value is null and checks that the arithmetic is consistent.",
+  "identification": {
+    "Scopus": null,
+    "Web of Science": null,
+    "IEEE Xplore": null,
+    "ScienceDirect": null,
+    "Other sources (citation chasing, Google Scholar)": null
+  },
+  "duplicates_removed": null,
+  "excluded_title_abstract": null,
+  "excluded_fulltext": {
+    "E1 Not hydroponic / controlled-environment": null,
+    "E2 No machine-learning method": null,
+    "E3 No empirical evaluation": null,
+    "E4 Not peer-reviewed / no full text": null,
+    "E5 Other": null
+  },
+  "included": null
+}

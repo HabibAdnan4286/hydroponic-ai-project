@@ -46,3 +46,11 @@ Applied inverse-frequency class weighting to the loss function to counteract the
 Class weighting resolved the N Deficient recall gap entirely (67% → 100%), at the cost of a 3-point drop in overall accuracy (94% → 91%) — a modest redistribution of errors toward the majority classes. This is a deliberate and justifiable trade-off: in a deployed nutrient-monitoring system, failing to detect a genuine nitrogen deficiency (false negative) is more costly than an occasional misclassification among the majority classes, since undetected nutrient stress compounds over time and directly affects crop yield. The class-weighted model is therefore preferred going forward despite its slightly lower raw accuracy.
 
 **Limitation**: Test set size (35 images total, 6–11 per class) is small; these metrics should be treated as indicative rather than statistically robust. Future work includes collecting additional data, particularly for the N Deficient class, to validate this finding at scale.
+
+
+## Addendum: leakage check and status of these numbers
+The dataset has no plant identifiers. A perceptual-hash analysis (`paper/scripts/check_leakage.py`) found 25 groups of
+near-duplicate images (52 of 209 images), and 3 of the 35 test images (8.6%) have a near-identical image in the
+training set. The single-split figures above are therefore probably optimistic. With only 6 test images in the
+N Deficient class, the 67% vs 100% recall difference is also within sampling noise. Group-aware cross-validation
+(`paper/scripts/cv_vision.py`) supplies the reportable estimates.

@@ -1,0 +1,14 @@
+Metric,Value
+Images,209
+Hamming threshold (bits of 64),10
+Groups (incl. singletons),182
+Groups with >1 image,25
+Images inside multi-image groups,52
+Largest group size,4
+Multi-image groups spanning >1 class (possible label noise),1
+"Median nearest-neighbour distance, all images",18.0
+Test images,35
+Test images with a train image within threshold,3
+Share of test images within threshold of a train image,8.6%
+Median test->train nearest distance,20.0
+Min test->train nearest distance,0

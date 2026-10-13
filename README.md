@@ -1,65 +1,46 @@
-# Hydroponic AI: Vision + IoT System for Nutrient Stress Detection and Growth Monitoring
+# Hydroponic AI: Vision + IoT Prototype and a Validity Case Study
 
 ## Motivation
-Gulf countries import the vast majority of their food due to arid climate and water scarcity, making indoor hydroponic farming a strategic path toward food security. This project prototypes an AI-driven monitoring system for hydroponic lettuce, combining computer vision (leaf health) with IoT sensor data (environmental growth prediction) — a first step toward autonomous, low-labor indoor farms suited to the region's climate and resource constraints.
+Gulf countries import most of their food because of arid climate and water scarcity; indoor hydroponic farming is one
+path toward food security. This repository prototypes machine-learning components for monitoring hydroponic lettuce and
+tests, with proper validation, what public datasets can and cannot support.
 
-## What This Project Does
-This system has two complementary components:
+## What is here
+1. **Vision classifier** - MobileNetV2 (transfer learning) classifies lettuce leaves as Healthy, K deficient,
+   N deficient or Wilt. 91% accuracy on a 35-image held-out split (see limitations).
+2. **Sensor-based growth-day model** - Random Forest on temperature, humidity, TDS and pH, **plus a validity analysis**
+   showing that the public dataset cannot support conclusions about temperature effects (all plants share one calendar).
+3. **Streamlit demo** (`app/app.py`) for both models.
+4. **Paper toolkit** (`paper/`) - scripts for leakage checks, cross-validation, confound analysis, figures and tables.
 
-1. **Vision-based leaf health classifier** — detects nutrient deficiency (Nitrogen, Potassium) and fungal disease (Wilt) from a photograph of a lettuce leaf, using a MobileNetV2 CNN fine-tuned via transfer learning.
-2. **Sensor-based growth-day predictor** — estimates a plant's growth stage (day 1–48) from environmental sensor readings (temperature, humidity, TDS, pH) using a Random Forest regressor, identifying temperature as the dominant driver of growth rate — directly relevant to heat-stressed Gulf climates.
-
-Both are wrapped in an interactive Streamlit demo (`app/app.py`) for live testing.
-
-## Results Summary
-| Component | Metric | Result |
+## Results at a glance
+| Component | Result | Caveat |
 |---|---|---|
-| Leaf health classifier | Test accuracy | 91% (94% before class-balancing fix; see [docs/baseline_results.md](docs/baseline_results.md)) |
-| Growth-day predictor | Test R² / MAE | 0.545 / 5.78 days (see [docs/growth_predictor_results.md](docs/growth_predictor_results.md)) |
+| Leaf classifier | 91% accuracy (class-weighted), single 35-image split | 3 of 35 test images have a near-duplicate in training; group-aware cross-validation is the reportable estimate |
+| Growth-day model | R2 0.62 under plant-grouped CV | Calendar date alone gives R2 = 1.00: the model detects the date, not plant biology |
 
-## Project Structure
-data/         # Datasets (raw data gitignored; splits.csv files tracked for reproducibility)
-notebooks/    # Exploration notebooks
-src/          # Data pipeline, training, and evaluation scripts
-models/       # Saved model weights (gitignored — large files; regenerate via src/train*.py)
-app/          # Streamlit demo combining both models
-docs/         # Detailed results, technical report
+Details: [docs/baseline_results.md](docs/baseline_results.md), [docs/growth_predictor_results.md](docs/growth_predictor_results.md).
 
-
-
-
-
-
-
-
-## Setup
+## Reproduce
 ```bash
 pip install -r requirements.txt
-```
-
-## Reproducing Results
-```bash
-# Leaf health classifier
 python -m kaggle datasets download -d rathorhome/lettuce-disease -p data --unzip
-python src/split_data.py
-python src/train.py
-python src/evaluate.py
-
-# Growth-day predictor
 python -m kaggle datasets download -d jurijsruko/lettuce -p data/growth-days --unzip
-python src/split_growth_data.py
-python src/train_growth_predictor.py
-
-# Demo app
+python src/split_data.py && python src/train.py && python src/evaluate.py
+python src/split_growth_data.py && python src/train_growth_predictor.py
+python paper/scripts/check_leakage.py && python paper/scripts/sensor_analysis.py
 python -m streamlit run app/app.py
 ```
 
-## Limitations & Future Work
-- **Class imbalance**: Nitrogen-deficiency class remains harder to detect than others due to fewer training samples (see baseline results doc).
-- **Growth predictor accuracy**: Environmental sensors alone explain ~55% of growth-day variance; light exposure and nutrient dosing data are likely missing contributors.
-- **Models are currently independent.** The core proposed contribution of this line of work is **multi-modal fusion** — combining the vision model's leaf-level stress signal with the sensor model's environmental trend to produce earlier, more reliable stress detection than either signal alone. This project establishes both components as a foundation for that fusion work.
-- **Gulf-specific extensions**: incorporating salinity stress and heat stress as explicit classes, using region-representative water and climate conditions, and validating on region-grown cultivars.
-- **Edge deployment**: running inference on-device (e.g. Raspberry Pi/Jetson) for low-connectivity farm environments.
+## Limitations
+- Both datasets are public, small and single-source; the image data has no plant identifiers.
+- The two models are independent. Vision + sensor fusion is proposed, not built.
+- The sensor dataset has no staggered planting, so environment effects on growth are not identifiable from it.
+- Heat and salinity stress (relevant to arid regions) are not covered by either dataset.
+
+## Next steps
+Collect an original dataset with staggered planting, logged environment and images using a low-cost sensor node; build
+and evaluate fusion under group-aware, temporal and external validation.
 
 ## License
 MIT

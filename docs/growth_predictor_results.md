@@ -1,27 +1,39 @@
-# Sensor-Based Growth-Day Predictor
+# Sensor-Based Growth-Day Model: Results and Validity Analysis
 
-**Model**: Random Forest Regressor (200 trees, max depth 10)
-**Dataset**: Lettuce Growth Days (Kaggle, jurijsruko) — 3,169 daily readings across 70 plants, 48-day growth window
-**Split**: By Plant_ID (49 train / 10 val / 11 test plants) to prevent data leakage across time-series readings of the same plant
-**Features**: Temperature (°C), Humidity (%), TDS Value (ppm), pH Level
-**Target**: Growth Days (1–48)
+**Dataset**: Lettuce Growth Days (Kaggle, jurijsruko), 3,169 daily readings, 70 plants, 48-day window
+**Features**: temperature, humidity, TDS, pH. **Target**: Growth Day (1-48)
+**Evaluation**: plant-grouped cross-validation, 5 folds x 5 repeats (`paper/scripts/sensor_analysis.py`)
 
-## Results
-| Metric | Validation | Test |
-|---|---|---|
-| MAE (days) | 6.01 | 5.78 |
-| R² | 0.526 | 0.545 |
+## Correction notice
+An earlier version of this page reported temperature as the "dominant driver" of growth (importance 0.87) and linked it
+to heat stress in Gulf climates. **That interpretation is withdrawn.** The analysis below shows it was a calendar
+confound, not evidence about plant biology.
 
-## Feature Importance
-| Feature | Importance |
-|---|---|
-| Temperature (°C) | 0.873 |
-| TDS Value (ppm) | 0.061 |
-| Humidity (%) | 0.043 |
-| pH Level | 0.023 |
+## What the data shows
+All 70 plants started on the same date (2023-08-03), so Growth Day is simply the calendar date minus a constant.
 
-## Discussion
+| Features | Model | R2 (mean +/- SD) | MAE (days) |
+|---|---|---|---|
+| Calendar date only | Random Forest | 1.000 +/- 0.000 | 0.00 |
+| Temperature only | Random Forest | 0.633 +/- 0.124 | 4.88 |
+| All four sensors | Random Forest | 0.624 +/- 0.118 | 5.00 |
+| All four sensors | Gradient boosting | 0.614 +/- 0.121 | 5.35 |
+| All four sensors | Linear regression | 0.003 +/- 0.005 | 11.29 |
+| Humidity + TDS + pH (no temperature) | Random Forest | -0.038 +/- 0.016 | 11.45 |
+| Mean baseline | - | 0.000 +/- 0.000 | 11.32 |
 
-Temperature dominates as the primary predictor of growth stage, consistent with established plant physiology literature — this has direct relevance to Gulf-region deployments, where ambient heat is a dominant environmental stressor compared to temperate climates. TDS, humidity, and pH contribute comparatively little individually, though this may reflect that they were kept within a narrower controlled range in this dataset's experimental setup rather than being truly unimportant.
+- Calendar date alone predicts growth day perfectly; temperature predicts it only because the temperature trace
+  identifies the day within one shared period.
+- Within individual plants, temperature and growth day are negatively correlated in 83% of plants (median Spearman
+  rho = -0.27) as conditions cooled from August to September - the opposite of a growth-promoting effect of warmth.
+- Humidity, TDS and pH carry essentially no information.
 
-**Limitation**: R²≈0.55 indicates roughly half the variance in growth days is unexplained by these four sensor features alone. Likely contributing factors not captured in this dataset include light exposure duration/intensity, nutrient dosing schedule, and individual plant genetic variation. Future work: incorporating light and nutrient-dosing data, and exploring whether combining this sensor-based prediction with the vision-based growth-stage signal (when available) improves overall accuracy — the core motivation for a multi-modal IoT + vision system.
+## Interpretation
+The model is best described as a date detector. This dataset cannot support any claim that temperature (or any other
+sensor reading) drives growth stage. Grouped cross-validation by plant does not fix this, because the plants are not
+independent experiments: they share one calendar.
+
+## What a valid dataset needs
+Staggered planting dates (so environment and plant age vary independently), logged air and root-zone temperature,
+light and nutrient dosing, and evaluation on held-out cohorts or seasons. Collecting such data with a low-cost sensor
+node is the planned next step.
